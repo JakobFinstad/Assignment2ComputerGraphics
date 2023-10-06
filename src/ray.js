@@ -5,7 +5,7 @@ class Ray {
     }
     
     at(t) {
-        //TODO
+        return this.origin.add(this.direction.multiply(t));
     }
 
     getDirection() {
