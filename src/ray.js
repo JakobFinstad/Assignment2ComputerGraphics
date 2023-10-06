@@ -7,4 +7,9 @@ class Ray {
     at(t) {
         //TODO
     }
+
+    getDirection() {
+        return this.direction;
+      }
+     
 }

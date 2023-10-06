@@ -55,4 +55,13 @@ class Vec3 {
     reflect(n) {
         return this.subtract(n.multiply(2*this.dot(n)));
     }
+    x() {
+        return this.x;
+    }
+    y() {
+        return this.y;
+    }
+    z() {
+        return this.z;
+    }
 }
