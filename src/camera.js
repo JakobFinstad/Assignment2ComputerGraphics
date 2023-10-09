@@ -6,7 +6,7 @@ class Camera {
         this.focalLength = 1.0;
         this.origin = new Vec3(0, 0, 0);
         this.horizontal = new Vec3(this.viewportWidth, 0.0, 0.0);
-        this.vertical = new Vec3(0.0, this.viewportHeight, 0.0);
+        this.vertical = new Vec3(0.0, this.viewportHeight*-1, 0.0);
         this.lowerLeftCorner = this.origin
             .subtract(this.horizontal.multiply(0.5))
             .subtract(this.vertical.multiply(0.5))
@@ -29,6 +29,7 @@ class Camera {
         
         for (let  j = 0; j < imageHeight; ++j) {
             for (let i = 0; i < imageWidth; ++i) {
+                const pixel = [];
                 const u = i / (imageWidth - 1);
                 const v = j / (imageHeight - 1);
     
@@ -36,22 +37,27 @@ class Camera {
                 const pixelColor = this.rayToColor(ray, world);
     
                 // Convert pixelColor to integers in the range [0, 255]
-                // const ir = Math.floor(255.999 * pixelColor.x);
-                // const ig = Math.floor(255.999 * pixelColor.y);
-                // const ib = Math.floor(255.999 * pixelColor.z);
+                const ir = pixelColor.x;
+                const ig = pixelColor.y;
+                const ib = pixelColor.z;
     
-                // image.push(ir);
-                // image.push(ig);
+                
+                pixel.push(ir);
+                pixel.push(ig);
+                pixel.push(ib);
+
+                image.push(pixel);
                 // image.push(ib);
-                console.log(pixelColor);
-                image.push(pixelColor.x);
-                image.push(pixelColor.y);
-                image.push(pixelColor.z);
+                // console.log(pixelColor);
+                // image.push(pixelColor.x);
+                // image.push(pixelColor.y);
+                // image.push(pixelColor.z);
             }
         }
 
         // console.log("\rDone.");
 
+        // console.log(image);
         displayImage(imageWidth, imageHeight, image);
     }
 

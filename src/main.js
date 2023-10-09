@@ -338,10 +338,10 @@ function antialiasing() {
     const imageHeight = 256;
     const world = new World();
     const camera = new Camera();
-    console.log(camera.getRay(0.3,0.6));
+    // console.log(camera.getRay(0.3,0.6));
 
-    // world.add(new Sphere(new Vec3(0,0,-1),0.5,0));
-    // world.add(new Sphere(new Vec3(0,-100.5,-1),100,0));
+    world.add(new Sphere(new Vec3(0,0,-1),0.5,0));
+    world.add(new Sphere(new Vec3(0,-100.5,-1),100,0));
     console.log();
 
     camera.render(world, imageWidth, imageHeight);
