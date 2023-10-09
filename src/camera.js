@@ -2,6 +2,7 @@ class Camera {
     constructor() {
         this.aspectRatio = 16.0 / 9.0;
         this.viewportHeight = 2.0;
+        this.samples_per_pixel;
         this.viewportWidth = this.aspectRatio * this.viewportHeight;
         this.focalLength = 1.0;
         this.origin = new Vec3(0, 0, 0);
@@ -77,5 +78,14 @@ class Camera {
         // console.log(a);
     
         return new Vec3((1.0 - a) * 1.0,(1.0 - a) * 1.0,(1.0 - a) * 1.0).add(new Vec3(a * 0.5, a * 0.7, a * 1.0));
+    }
+
+    findColor(color, samples_per_pixel){
+        const r = color.x;
+        const g = color.y;
+        const b = color.z;
+
+        const scale = 1.0/ samples_per_pixel;
+
     }
 }
