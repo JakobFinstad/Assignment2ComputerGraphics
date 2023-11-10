@@ -336,16 +336,79 @@ function sphereAndGround() {
 function antialiasing() {
     const imageWidth = 400;
     const imageHeight = 256;
+    const image = [];
+    const number_of_pixel = 100;
     const world = new World();
-    const camera = new Camera();
-    camera.samples_per_pixel = 100;
-    // console.log(camera.getRay(0.3,0.6));
 
     world.add(new Sphere(new Vec3(0,0,-1),0.5,0));
     world.add(new Sphere(new Vec3(0,-100.5,-1),100,0));
-    console.log();
 
-    camera.render(world, imageWidth, imageHeight,samples_per_pixel);
+
+    // Camera
+    const camera = new Camera();
+    const horizontal = camera.horizontal;
+    const vertical = camera.vertical;
+    const lowerLeftCorner = camera.lowerLeftCorner
+    const origin = camera.origin;
+
+
+
+
+    for (let j = 0; j < imageHeight; j++) {
+        for (let i = 0; i < imageWidth; i++) {
+            const pixel = [];
+            let pixel_color = Vec3(0,0,0);
+
+            for(let k = 0; k < number_of_pixel; k++) {
+                const u = (i + Math.random()) / (imageWidth - 1);
+                const v = (i + Math.random()) / (imageHeight - 1);
+                
+
+                //Creating ray from the camera
+                const pixel_center = lowerLeftCorner
+                .add(horizontal.multiply(u))
+                .add(vertical.multiply(v))
+                .subtract(origin);
+            
+                const r = new Ray(origin, pixel_center);
+
+                pixel_color = pixel_color.add(rayToColor(r,world));
+
+            
+            }
+            
+            //Take the average of all the pixels colors
+            pixel_color = pixel_color.divide(number_of_pixel);
+
+            pixel.push(pixel_color.x);
+            pixel.push(pixel_color.y);
+            pixel.push(pixel_color.z);
+
+            image.push(pixel);
+        }
+    }
+
+    displayImage(imageWidth, imageHeight, image);
+
+    function rayToColor(ray, world) {
+        const rec = world.hit(ray, 0 , Infinity);
+        // const t = hit_sphere(center, 0.5 , ray)
+        // console.log(t);
+        if(rec.hit) {
+            return rec.normal.add(new Vec3(1,1,1)).multiply(0.5);
+        }
+
+
+        const unit_direction = ray.getDirection().unitVector();
+        const a = 0.5 * (unit_direction.y + 1.0);
+
+        return new Vec3(
+            (1.0 - a) * 1.0,
+            (1.0 - a) * 1.0,
+            (1.0 - a) * 1.0
+        ).add(new Vec3(a * 0.5, a * 0.7, a * 1.0));
+    }
+
     
 }
 
