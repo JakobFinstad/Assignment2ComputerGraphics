@@ -3,8 +3,8 @@
 // redSphere();
 // normalsSphere();
 // sphereAndGround();
-antialiasing();
-//diffuseSphere();
+// antialiasing();
+diffuseSphere();
 //metalSpheres();
 
 function firstImage() {
@@ -28,7 +28,7 @@ function firstImage() {
 }
 
 function blueWhiteGradient() {
-    const imageWidth = 400;
+    const imageWidth = 256;
     const imageHeight = 256;
     const image = [];
 
@@ -139,7 +139,7 @@ function redSphere() {
             return new Vec3(1, 0, 0);
         }
 
-        const unit_direction = ray.getDirection();
+        const unit_direction = ray.getDirection().unitVector();
         const a = 0.5 * (unit_direction.y + 1.0);
 
         return new Vec3(
@@ -162,7 +162,7 @@ function redSphere() {
 
 
 function normalsSphere() {
-    const imageWidth = 400;
+    const imageWidth = 256;
     const imageHeight = 256;
     const image = [];
 
@@ -213,8 +213,8 @@ function normalsSphere() {
         // console.log(t);
 
         if (t > 0.0) {
-            const N = ray.at(t).subtract(new Vec3(0,0,-1));
-            console.log(N);
+            const N = ray.at(t).subtract(new Vec3(0,0,-1)).unitVector();
+            // console.log(N);
             return new Vec3(N.x + 1, N.y + 1, N.z + 1).multiply(0.5);
         }
 
@@ -334,7 +334,7 @@ function sphereAndGround() {
 }
 
 function antialiasing() {
-    const imageWidth = 400;
+    const imageWidth = 256;
     const imageHeight = 256;
     const image = [];
     const number_of_pixel = 100;
@@ -348,20 +348,20 @@ function antialiasing() {
     const camera = new Camera();
     const horizontal = camera.horizontal;
     const vertical = camera.vertical;
-    const lowerLeftCorner = camera.lowerLeftCorner
+    const lowerLeftCorner = camera.lowerLeftCorner;
     const origin = camera.origin;
 
 
 
 
-    for (let j = 0; j < imageHeight; j++) {
+    for (let j = imageHeight - 1; j >= 0; j--) {
         for (let i = 0; i < imageWidth; i++) {
             const pixel = [];
-            let pixel_color = Vec3(0,0,0);
+            let pixel_color = new Vec3(0,0,0);
 
             for(let k = 0; k < number_of_pixel; k++) {
                 const u = (i + Math.random()) / (imageWidth - 1);
-                const v = (i + Math.random()) / (imageHeight - 1);
+                const v = (j + Math.random()) / (imageHeight - 1);
                 
 
                 //Creating ray from the camera
@@ -378,7 +378,8 @@ function antialiasing() {
             }
             
             //Take the average of all the pixels colors
-            pixel_color = pixel_color.divide(number_of_pixel);
+            pixel_color = pixel_color.multiply(1/number_of_pixel);
+            // console.log(pixel_color);
 
             pixel.push(pixel_color.x);
             pixel.push(pixel_color.y);
@@ -395,25 +396,110 @@ function antialiasing() {
         // const t = hit_sphere(center, 0.5 , ray)
         // console.log(t);
         if(rec.hit) {
-            return rec.normal.add(new Vec3(1,1,1)).multiply(0.5);
+            const normal = rec.normal;
+            return normal.add(new Vec3(1,1,1)).multiply(0.5);
         }
 
 
         const unit_direction = ray.getDirection().unitVector();
         const a = 0.5 * (unit_direction.y + 1.0);
 
-        return new Vec3(
-            (1.0 - a) * 1.0,
-            (1.0 - a) * 1.0,
-            (1.0 - a) * 1.0
-        ).add(new Vec3(a * 0.5, a * 0.7, a * 1.0));
+        return new Vec3(1.0,1.0, 1.0).multiply(1-a).add(new Vec3(a * 0.5, a * 0.7, a * 1.0));
     }
 
     
 }
 
 function diffuseSphere() {
-    //TODO
+    
+    const imageWidth = 256;
+    const imageHeight = 256;
+    const image = [];
+    const number_of_pixel = 100;
+    const max_depth = 20;
+    const world = new World();
+
+    world.add(new Sphere(new Vec3(0,0,-1),0.5,0));
+    world.add(new Sphere(new Vec3(0,-100.5,-1),100,0));
+
+
+    // Camera
+    const camera = new Camera();
+    const horizontal = camera.horizontal;
+    const vertical = camera.vertical;
+    const lowerLeftCorner = camera.lowerLeftCorner;
+    const origin = camera.origin;
+
+
+
+
+    for (let j = imageHeight - 1; j >= 0; j--) {
+        for (let i = 0; i < imageWidth; i++) {
+            const pixel = [];
+            let pixel_color = new Vec3(0,0,0);
+
+            for(let k = 0; k < number_of_pixel; k++) {
+                const u = (i + Math.random()) / (imageWidth - 1);
+                const v = (j + Math.random()) / (imageHeight - 1);
+                
+
+                //Creating ray from the camera
+                const pixel_center = lowerLeftCorner
+                .add(horizontal.multiply(u))
+                .add(vertical.multiply(v))
+                .subtract(origin);
+            
+                const r = new Ray(origin, pixel_center);
+
+                pixel_color = pixel_color.add(rayToColor(r,world,max_depth));
+
+            
+            }
+            
+            //Take the average of all the pixels colors
+            pixel_color = pixel_color.multiply(1/number_of_pixel);
+            // console.log(pixel_color);
+
+            pixel.push(pixel_color.x);
+            pixel.push(pixel_color.y);
+            pixel.push(pixel_color.z);
+
+            image.push(pixel);
+        }
+    }
+
+    displayImage(imageWidth, imageHeight, image);
+
+    function randomPointInSphere() {
+        while (true) {
+            const point = Vec3.random(-1,1);
+            if(point.squaredLength() >= 1) continue;
+            return point;
+        }
+    }
+
+    function rayToColor(ray, world, depth) {
+        const rec = world.hit(ray, 0 , Infinity);
+        // const t = hit_sphere(center, 0.5 , ray)
+        // console.log(t);
+
+        if(depth <= 0) {
+            return new Vec3(0,0,0);
+        }
+
+        if(rec && rec.hit) {
+            const targetPoint = rec.point.add(rec.normal).add(randomPointInSphere());
+            return rayToColor(new Ray(rec.point, targetPoint.subtract(rec.point)), world, depth - 1);
+        }
+
+
+        const unit_direction = ray.getDirection().unitVector();
+        const a = 0.5 * (unit_direction.y + 1.0);
+
+        return new Vec3(1.0,1.0, 1.0).multiply(1-a).add(new Vec3(a * 0.5, a * 0.7, a * 1.0));
+    }
+
+    
 }
 
 function metalSpheres() {
